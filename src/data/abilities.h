@@ -2409,4 +2409,182 @@ const struct Ability gAbilitiesInfo[ABILITIES_COUNT] =
         .cantBeSwapped = TRUE,
         .cantBeTraced = TRUE,
     },
+    [ABILITY_LIVING_SHIELD] =
+    {
+        .name = _("Living Shield"),
+        .description = COMPOUND_STRING("Halves supereffective damage."),
+        .aiRating = 5,
+    },
+        [ABILITY_SHORT_FUSE] =
+    {
+        .name = _("Short Fuse"),
+        .description = COMPOUND_STRING("This Pokemon has RAGE."),
+        .aiRating = 5,
+    },
+        [ABILITY_TRAP_MASTER] =
+    {
+        .name = _("Trap Master"),
+        .description = COMPOUND_STRING("Strengthens Hazards."),
+        .aiRating = 5,
+    },
+        [ABILITY_PUPPET_MASTER] =
+    {
+        .name = _("Puppet Master"),
+        .description = COMPOUND_STRING("Strengthens Substitutes."),
+        .aiRating = 5,
+    },
+        [ABILITY_RAIL_LAUNCHER] =
+    {
+        .name = _("Rail Launcher"),
+        .description = COMPOUND_STRING("Powers up BEAM moves."),
+        .aiRating = 5,
+    },
+        [ABILITY_SHOCK_THREADS] =
+    {
+        .name = _("Shock Threads"),
+        .description = COMPOUND_STRING("Lower speed to damage."),
+        .aiRating = 5,
+    },
+        [ABILITY_FERMATA] =
+    {
+        .name = _("Fermata"),
+        .description = COMPOUND_STRING("Sound moves hit again."),
+        .aiRating = 5,
+    },
+        [ABILITY_DELTA_SPEED] =
+    {
+        .name = _("Delta Speed"),
+        .description = COMPOUND_STRING("Removes FLY weaknesses"),
+        .aiRating = 5,
+    },
+        [ABILITY_SHADOW_WEAVE] =
+    {
+        .name = _("Shadow Weave"),
+        .description = COMPOUND_STRING("Dodges the first move."),
+        .aiRating = 5,
+    },
+        [ABILITY_SHOWDOWN_MODE] =
+    {
+        .name = _("Showdown Mode"),
+        .description = COMPOUND_STRING("Powers up but lose HP."),
+        .aiRating = 5,
+    },
+        [ABILITY_BOMBS_AWAY] =
+    {
+        .name = _("Bombs Away"),
+        .description = COMPOUND_STRING("Boosts projectiles."),
+        .aiRating = 5,
+    },
+        [ABILITY_WATERLOGGED] =
+    {
+        .name = _("Waterlogged"),
+        .description = COMPOUND_STRING("Fast in sun slow in rain."),
+        .aiRating = 5,
+    },
+        [ABILITY_LIGHTNING_CHARGE] =
+    {
+        .name = _("Lightning Charge"),
+        .description = COMPOUND_STRING("Pierce moves up SPEED."),
+        .aiRating = 5,
+    },
+        [ABILITY_BRACING_LEGS] =
+    {
+        .name = _("Bracing Legs"),
+        .description = COMPOUND_STRING("Self buffs go first."),
+        .aiRating = 5,
+    },
+        [ABILITY_ESP_WAVES] =
+    {
+        .name = _("ESP Waves"),
+        .description = COMPOUND_STRING("Status hits both foes."),
+        .aiRating = 5,
+    },
+        [ABILITY_GRASSY_CLOAK] =
+    {
+        .name = _("Grassy Cloak"),
+        .description = COMPOUND_STRING("Immune to and boosts GRASS."),
+        .aiRating = 5,
+    },
+         [ABILITY_SANDY_CLOAK] =
+    {
+        .name = _("Sandy Cloak"),
+        .description = COMPOUND_STRING("Immune to and boosts GROUND."),
+        .aiRating = 5,
+    },
+        [ABILITY_TRASHY_CLOAK] =
+    {
+        .name = _("Trashy Cloak"),
+        .description = COMPOUND_STRING("Immune to and boosts STEEL."),
+        .aiRating = 5,
+    },   
+        [ABILITY_FLAMING_SCALES] =
+    {
+        .name = _("Flaming Scales"),
+        .description = COMPOUND_STRING("Weakens FIRE moves."),
+        .aiRating = 5,
+    },
+        [ABILITY_PARALYZING_SCALES] =
+    {
+        #if B_EXPANDED_ABILITY_NAMES == TRUE
+        .name = _("ParalyzingScales"),
+        #else
+        .name = _("PAR Scales"),
+        #endif
+        .description = COMPOUND_STRING("FLYING moves lower speed."),
+        .aiRating = 5,
+    },
+        [ABILITY_REFLECTIVE_SCALES] =
+    {
+        #if B_EXPANDED_ABILITY_NAMES == TRUE
+        .name = _("ReflectiveScales"),
+        #else
+        .name = _("ReflectScale"),
+        #endif
+        .description = COMPOUND_STRING("Bounce moves after user."),
+        .aiRating = 5,
+    },
+        [ABILITY_PROTEIN_DRAIN] =
+    {
+        #if B_EXPANDED_ABILITY_NAMES == TRUE
+        .name = _("Protein Drain"),
+        #else
+        .name = _("ProteinDrain"),
+        #endif
+        .description = COMPOUND_STRING("Absorb to boost ATK/DEF."),
+        .aiRating = 5,
+    },
+        [ABILITY_INTOXICATING_SCENT] =
+    {
+        #if B_EXPANDED_ABILITY_NAMES == TRUE
+        .name = _("Intoxicating"),
+        #else
+        .name = _("Daze Scent"),
+        #endif
+        .description = COMPOUND_STRING("Inflicts infatuation."),
+        .aiRating = 5,
+    },
+        [ABILITY_TOXIC_GLUE] =
+    {
+        .name = _("Toxic Glue"),
+        .description = COMPOUND_STRING("PSN traps foes."),
+        .aiRating = 5,
+    },
+        [ABILITY_INSPIRE] =
+    {
+        .name = _("Inspire"),
+        .description = COMPOUND_STRING("Boost allies if KO'd"),
+        .aiRating = 5,
+    },
+        [ABILITY_INSECTIVORE] =
+    {
+        .name = _("Insectivore"),
+        .description = COMPOUND_STRING("Strong against Bugs."),
+        .aiRating = 5,
+    },
+        [ABILITY_NEUROTOXIN] =
+    {
+        .name = _("Neurotoxin"),
+        .description = COMPOUND_STRING("PSN lowers SPEED."),
+        .aiRating = 5,
+    },
 };
