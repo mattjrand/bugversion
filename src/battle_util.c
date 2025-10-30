@@ -1193,6 +1193,14 @@ void PrepareStringBattle(enum StringID stringId, u32 battler)
         else
             SET_STATCHANGER(STAT_SPATK, 2, FALSE);
     }
+    else if (stringId == STRINGID_DEFENDERSSTATFELL && battlerAbility == ABILITY_SHOCK_THREADS)
+    {
+        
+                gBattleStruct->moveDamage[gBattlerTarget] = GetNonDynamaxMaxHP(gBattlerAttacker) / 8;
+                PREPARE_ABILITY_BUFFER(gBattleTextBuff1, gLastUsedAbility);
+                BattleScriptCall(BattleScript_RoughSkinActivates);
+    }
+
     else if (GetGenConfig(GEN_CONFIG_UPDATED_INTIMIDATE) >= GEN_8
             && stringId == STRINGID_PKMNCUTSATTACKWITH
             && targetAbility == ABILITY_RATTLED
@@ -8318,6 +8326,10 @@ static inline u32 CalcMoveBasePowerAfterModifiers(struct DamageContext *ctx)
         break;
     case ABILITY_MEGA_LAUNCHER:
         if (IsPulseMove(move))
+           modifier = uq4_12_multiply(modifier, UQ_4_12(1.5));
+        break;
+    case ABILITY_RAIL_LAUNCHER:
+        if (IsBeamMove(move))
            modifier = uq4_12_multiply(modifier, UQ_4_12(1.5));
         break;
     case ABILITY_WATER_BUBBLE:

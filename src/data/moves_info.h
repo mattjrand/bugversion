@@ -1627,6 +1627,7 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
         .contestComboMoves = {COMBO_STARTER_HAIL},
         .battleAnimScript = gBattleAnimMove_IceBeam,
         .validApprenticeMove = TRUE,
+        .beamMove = TRUE,
     },
 
     [MOVE_BLIZZARD] =
