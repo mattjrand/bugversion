@@ -28,12 +28,60 @@ SINGLE_BATTLE_TEST("Overcoat blocks powder and spore moves (Gen6+)")
     }
 }
 
+SINGLE_BATTLE_TEST("Shield Dust blocks powder and spore moves (Gen6+)")
+{
+    u32 gen = 0;
+    PARAMETRIZE { gen = GEN_5; }
+    PARAMETRIZE { gen = GEN_6; }
+    GIVEN {
+        WITH_CONFIG(GEN_CONFIG_POWDER_GRASS, gen);
+        ASSUME(IsPowderMove(MOVE_STUN_SPORE));
+        PLAYER(SPECIES_WYNAUT);
+        OPPONENT(SPECIES_PINECO) { Ability(ABILITY_SHIELD_DUST); }
+    } WHEN {
+        TURN { MOVE(player, MOVE_STUN_SPORE); }
+    } SCENE {
+        if (gen == GEN_6) {
+            ABILITY_POPUP(opponent, ABILITY_SHIELD_DUST);
+            NOT ANIMATION(ANIM_TYPE_MOVE, MOVE_STUN_SPORE, player);
+            MESSAGE("It doesn't affect the opposing Pineco…");
+        } else {
+            ANIMATION(ANIM_TYPE_MOVE, MOVE_STUN_SPORE, player);
+            NONE_OF {
+                ABILITY_POPUP(opponent, ABILITY_SHIELD_DUST);
+                MESSAGE("It doesn't affect the opposing Pineco…");
+            }
+        }
+    }
+}
+
 DOUBLE_BATTLE_TEST("Overcoat blocks damage from sandstorm")
 {
     GIVEN {
         PLAYER(SPECIES_WYNAUT)    { Speed(50); }
         PLAYER(SPECIES_HELIOLISK) { Speed(40); Ability(ABILITY_SAND_VEIL); }
         OPPONENT(SPECIES_PINECO)  { Speed(30); Ability(ABILITY_OVERCOAT); }
+        OPPONENT(SPECIES_STARLY)     { Speed(20); }
+    } WHEN {
+        TURN { MOVE(playerLeft, MOVE_SANDSTORM); }
+    } SCENE {
+        MESSAGE("Wynaut used Sandstorm!");
+        MESSAGE("The sandstorm is raging.");
+        HP_BAR(playerLeft);
+        NONE_OF {
+            HP_BAR(playerRight);
+            HP_BAR(opponentLeft);
+        }
+        HP_BAR(opponentRight);
+    }
+}
+
+DOUBLE_BATTLE_TEST("Shield Dust blocks damage from sandstorm")
+{
+    GIVEN {
+        PLAYER(SPECIES_WYNAUT)    { Speed(50); }
+        PLAYER(SPECIES_HELIOLISK) { Speed(40); Ability(ABILITY_SAND_VEIL); }
+        OPPONENT(SPECIES_PINECO)  { Speed(30); Ability(ABILITY_SHIELD_DUST); }
         OPPONENT(SPECIES_STARLY)     { Speed(20); }
     } WHEN {
         TURN { MOVE(playerLeft, MOVE_SANDSTORM); }
@@ -75,6 +123,21 @@ SINGLE_BATTLE_TEST("Overcoat blocks Effect Spore's effect")
 {
     GIVEN {
         PLAYER(SPECIES_PINECO) {Ability(ABILITY_OVERCOAT);}
+        OPPONENT(SPECIES_SHROOMISH) {Ability(ABILITY_EFFECT_SPORE);}
+    } WHEN {
+        TURN { MOVE(player, MOVE_TACKLE, WITH_RNG(RNG_EFFECT_SPORE, 1)); }
+    } SCENE {
+        MESSAGE("Pineco used Tackle!");
+        NOT ABILITY_POPUP(opponent, ABILITY_EFFECT_SPORE);
+    } THEN {
+        EXPECT_EQ(player->status1, 0);
+    }
+}
+
+SINGLE_BATTLE_TEST("Shield Dust blocks Effect Spore's effect")
+{
+    GIVEN {
+        PLAYER(SPECIES_PINECO) {Ability(ABILITY_SHIELD_DUST);}
         OPPONENT(SPECIES_SHROOMISH) {Ability(ABILITY_EFFECT_SPORE);}
     } WHEN {
         TURN { MOVE(player, MOVE_TACKLE, WITH_RNG(RNG_EFFECT_SPORE, 1)); }
