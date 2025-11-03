@@ -1128,6 +1128,28 @@ static void Cmd_attackcanceler(void)
         return;
     }
 
+    if (gSpecialStatuses[gBattlerAttacker].fermataState == FERMATA_OFF
+    && GetBattlerAbility(gBattlerAttacker) == ABILITY_FERMATA
+    && IsMoveAffectedByFermata(gCurrentMove, gBattlerAttacker)
+    && !(gAbsentBattlerFlags & (1u << gBattlerTarget))
+    && GetActiveGimmick(gBattlerAttacker) != GIMMICK_Z_MOVE)
+    {
+        gSpecialStatuses[gBattlerAttacker].fermataState = FERMATA_1ST_HIT;
+        gMultiHitCounter = 2;
+        PREPARE_BYTE_NUMBER_BUFFER(gBattleScripting.multihitString, 1, 0)
+        return;
+    }
+    else if (gSpecialStatuses[gBattlerAttacker].fermataState == FERMATA_OFF
+    && GetBattlerAbility(BATTLE_PARTNER(gBattlerAttacker)) == ABILITY_FERMATA
+    && IsMoveAffectedByFermata(gCurrentMove, gBattlerAttacker)
+    && !(gAbsentBattlerFlags & (1u << gBattlerTarget))
+    && GetActiveGimmick(gBattlerAttacker) != GIMMICK_Z_MOVE)
+    {
+        gSpecialStatuses[gBattlerAttacker].fermataState = FERMATA_1ST_HIT;
+        gMultiHitCounter = 2;
+        PREPARE_BYTE_NUMBER_BUFFER(gBattleScripting.multihitString, 1, 0)
+        return;
+    }
 
     u32 abilityDef = GetBattlerAbility(gBattlerTarget);
     if (CanAbilityBlockMove(
@@ -1291,6 +1313,15 @@ static void Cmd_attackcanceler(void)
         }
         gBattleCommunication[MISS_TYPE] = B_MSG_PROTECTED;
         gBattlescriptCurrInstr = cmd->nextInstr;
+
+        if (gSpecialStatuses[gBattlerAttacker].fermataState == FERMATA_1ST_HIT)
+        {
+            gSpecialStatuses[gBattlerAttacker].fermataState = FERMATA_OFF; // No second hit if first hit was blocked
+            gSpecialStatuses[gBattlerAttacker].multiHitOn = 0;
+            gMultiHitCounter = 0;
+        }
+        gBattleCommunication[MISS_TYPE] = B_MSG_PROTECTED;
+        gBattlescriptCurrInstr = cmd->nextInstr;
     }
     else if (gProtectStructs[gBattlerTarget].beakBlastCharge && !CanBattlerAvoidContactEffects(gBattlerAttacker, gBattlerTarget, GetBattlerAbility(gBattlerAttacker), GetBattlerHoldEffect(gBattlerAttacker, TRUE), gCurrentMove))
     {
@@ -1384,9 +1415,10 @@ static void AccuracyCheck(bool32 recalcDragonDarts, const u8 *nextInstr, const u
         }
     }
     else if (gSpecialStatuses[gBattlerAttacker].parentalBondState == PARENTAL_BOND_2ND_HIT
+        || (gSpecialStatuses[gBattlerAttacker].fermataState == FERMATA_2ND_HIT
         || (gSpecialStatuses[gBattlerAttacker].multiHitOn
         && (abilityAtk == ABILITY_SKILL_LINK || holdEffectAtk == HOLD_EFFECT_LOADED_DICE
-        || !(effect == EFFECT_TRIPLE_KICK || effect == EFFECT_POPULATION_BOMB))))
+        || !(effect == EFFECT_TRIPLE_KICK || effect == EFFECT_POPULATION_BOMB)))))
     {
         // No acc checks for second hit of Parental Bond or multi hit moves, except Triple Kick/Triple Axel/Population Bomb
         gBattlescriptCurrInstr = nextInstr;
@@ -2179,6 +2211,12 @@ static void Cmd_attackanimation(void)
     else
     {
         if (gSpecialStatuses[gBattlerAttacker].parentalBondState == PARENTAL_BOND_2ND_HIT) // No animation on second hit
+        {
+            gBattlescriptCurrInstr = cmd->nextInstr;
+            return;
+        }
+
+        if (gSpecialStatuses[gBattlerAttacker].fermataState == FERMATA_2ND_HIT) // No animation on second hit
         {
             gBattlescriptCurrInstr = cmd->nextInstr;
             return;
@@ -2998,6 +3036,14 @@ void SetMoveEffect(u32 battler, u32 effectBattler, bool32 primary, bool32 certai
 
     if (gSpecialStatuses[gBattlerAttacker].parentalBondState == PARENTAL_BOND_1ST_HIT
         && IsBattlerAlive(gBattlerTarget)
+        && IsFinalStrikeEffect(gBattleScripting.moveEffect))
+    {
+        gBattlescriptCurrInstr++;
+        return;
+    }
+
+    if (gSpecialStatuses[gBattlerAttacker].fermataState == FERMATA_1ST_HIT
+        && gBattleMons[gBattlerTarget].hp != 0
         && IsFinalStrikeEffect(gBattleScripting.moveEffect))
     {
         gBattlescriptCurrInstr++;
@@ -3869,6 +3915,8 @@ void SetMoveEffect(u32 battler, u32 effectBattler, bool32 primary, bool32 certai
             gFieldStatuses |= statusFlag;
             if (GetBattlerHoldEffect(gBattlerAttacker, TRUE) == HOLD_EFFECT_TERRAIN_EXTENDER)
                 gFieldTimers.terrainTimer = gBattleTurnCounter + 8;
+            else if (GetBattlerAbility(gBattlerAttacker) == ABILITY_TRAP_MASTER)
+                gFieldTimers.terrainTimer = gBattleTurnCounter + 8;
             else
                 gFieldTimers.terrainTimer = gBattleTurnCounter + 5;
             BattleScriptPush(gBattlescriptCurrInstr + 1);
@@ -3929,6 +3977,9 @@ void SetMoveEffect(u32 battler, u32 effectBattler, bool32 primary, bool32 certai
         if (!(gFieldStatuses & STATUS_FIELD_GRAVITY))
         {
             gFieldStatuses |= STATUS_FIELD_GRAVITY;
+            if (GetBattlerAbility(gBattlerAttacker) == ABILITY_TRAP_MASTER)
+            gFieldTimers.gravityTimer = gBattleTurnCounter + 8;
+            else
             gFieldTimers.gravityTimer = gBattleTurnCounter + 5;
             BattleScriptPush(gBattlescriptCurrInstr + 1);
             gBattlescriptCurrInstr = BattleScript_EffectGravitySuccess;
@@ -6504,6 +6555,18 @@ static void Cmd_moveend(void)
                         BattleScriptPush(GetMoveBattleScript(gCurrentMove));
                         gBattlescriptCurrInstr = BattleScript_FlushMessageBox;
                         return;
+
+                        if (gSpecialStatuses[gBattlerAttacker].fermataState)
+                            gSpecialStatuses[gBattlerAttacker].fermataState--;
+
+                        gHitMarker |= (HITMARKER_NO_PPDEDUCT | HITMARKER_NO_ATTACKSTRING);
+                        gBattleScripting.animTargetsHit = 0;
+                        gBattleScripting.moveendState = 0;
+                        gSpecialStatuses[gBattlerAttacker].multiHitOn = TRUE;
+                        MoveValuesCleanUp();
+                        BattleScriptPush(GetMoveBattleScript(gCurrentMove));
+                        gBattlescriptCurrInstr = BattleScript_FlushMessageBox;
+                        return;
                     }
                     else
                     {
@@ -6514,6 +6577,7 @@ static void Cmd_moveend(void)
             }
             gMultiHitCounter = 0;
             gSpecialStatuses[gBattlerAttacker].parentalBondState = PARENTAL_BOND_OFF;
+            gSpecialStatuses[gBattlerAttacker].fermataState = FERMATA_OFF;
             gSpecialStatuses[gBattlerAttacker].multiHitOn = 0;
             gBattleScripting.moveendState++;
             break;
@@ -6908,6 +6972,8 @@ static void Cmd_moveend(void)
              || gBattleStruct->moveResultFlags[gBattlerTarget] & MOVE_RESULT_NO_EFFECT
              || gHitMarker & HITMARKER_UNABLE_TO_USE_MOVE)
                 gBattleStruct->metronomeItemCounter[gBattlerAttacker] = 0;
+            if (gCurrentMove == gLastResultingMoves[gBattlerAttacker] && gSpecialStatuses[gBattlerAttacker].fermataState != FERMATA_1ST_HIT)
+                gBattleStruct->metronomeItemCounter[gBattlerAttacker]++;
             else if (gCurrentMove == gLastResultingMoves[gBattlerAttacker] && gSpecialStatuses[gBattlerAttacker].parentalBondState != PARENTAL_BOND_1ST_HIT)
                 gBattleStruct->metronomeItemCounter[gBattlerAttacker]++;
             gBattleScripting.moveendState++;
@@ -8600,6 +8666,12 @@ static void Cmd_setgravity(void)
     if (gFieldStatuses & STATUS_FIELD_GRAVITY)
     {
         gBattlescriptCurrInstr = cmd->failInstr;
+    }
+    else if (GetBattlerAbility(gBattlerAttacker) == ABILITY_TRAP_MASTER)
+    {
+        gFieldStatuses |= STATUS_FIELD_GRAVITY;
+        gFieldTimers.gravityTimer = gBattleTurnCounter + 8;
+        gBattlescriptCurrInstr = cmd->nextInstr;
     }
     else
     {
@@ -11283,6 +11355,8 @@ static void Cmd_setsubstitute(void)
         gBattleMons[gBattlerAttacker].volatiles.wrapped = FALSE;
         if (factor == 2)
             gDisableStructs[gBattlerAttacker].substituteHP = gBattleStruct->moveDamage[gBattlerAttacker] / 2;
+        else if (GetBattlerAbility(gBattlerAttacker) == ABILITY_PUPPET_MASTER)
+            gDisableStructs[gBattlerAttacker].substituteHP = gBattleStruct->moveDamage[gBattlerAttacker] * 2;
         else
             gDisableStructs[gBattlerAttacker].substituteHP = gBattleStruct->moveDamage[gBattlerAttacker];
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SET_SUBSTITUTE;
@@ -13110,6 +13184,12 @@ static void HandleRoomMove(u32 statusFlag, u16 *timer, u8 stringId)
         gFieldStatuses &= ~statusFlag;
         gBattleCommunication[MULTISTRING_CHOOSER] = stringId + 1;
     }
+    else if (GetBattlerAbility(gBattlerAttacker) == ABILITY_TRAP_MASTER)
+    {
+        gFieldStatuses |= statusFlag;
+        *timer = gBattleTurnCounter + 8;
+        gBattleCommunication[MULTISTRING_CHOOSER] = stringId;
+    }
     else
     {
         gFieldStatuses |= statusFlag;
@@ -13515,10 +13595,20 @@ static void Cmd_settypebasedhalvers(void)
         {
             if (!(gFieldStatuses & STATUS_FIELD_MUDSPORT))
             {
+                if (GetBattlerAbility(gBattlerAttacker) == ABILITY_TRAP_MASTER)
+                {
+                gFieldStatuses |= STATUS_FIELD_MUDSPORT;
+                gFieldTimers.mudSportTimer = gBattleTurnCounter + 8;
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WEAKEN_ELECTRIC;
+                worked = TRUE;
+                }
+                else
+                {
                 gFieldStatuses |= STATUS_FIELD_MUDSPORT;
                 gFieldTimers.mudSportTimer = gBattleTurnCounter + 5;
                 gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WEAKEN_ELECTRIC;
                 worked = TRUE;
+                }
             }
         }
         else
@@ -13537,10 +13627,20 @@ static void Cmd_settypebasedhalvers(void)
         {
             if (!(gFieldStatuses & STATUS_FIELD_WATERSPORT))
             {
+                if (GetBattlerAbility(gBattlerAttacker) == ABILITY_TRAP_MASTER)
+                {
+                gFieldStatuses |= STATUS_FIELD_WATERSPORT;
+                gFieldTimers.waterSportTimer = gBattleTurnCounter + 8;
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WEAKEN_FIRE;
+                worked = TRUE;
+                }
+                else
+                {
                 gFieldStatuses |= STATUS_FIELD_WATERSPORT;
                 gFieldTimers.waterSportTimer = gBattleTurnCounter + 5;
                 gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_WEAKEN_FIRE;
                 worked = TRUE;
+                }
             }
         }
         else
@@ -14866,6 +14966,35 @@ bool32 IsMoveAffectedByParentalBond(u32 move, u32 battler)
     return FALSE;
 }
 
+bool32 IsMoveAffectedByFermata(u32 move, u32 battler)
+{
+    if (move != MOVE_NONE && move != MOVE_UNAVAILABLE && move != MOVE_STRUGGLE
+        && gMovesInfo[move].soundMove == TRUE
+        && gMovesInfo[move].strikeCount < 2)
+    {
+        if (IsDoubleBattle())
+        {
+            switch (GetBattlerMoveTargetType(battler, move))
+            {
+            // Both foes are alive, spread move strikes once
+            case MOVE_TARGET_BOTH:
+                if (CountAliveMonsInBattle(BATTLE_ALIVE_SIDE, gBattlerTarget) >= 2)
+                    return FALSE;
+                break;
+            // Either both foes or one foe and its ally are alive; spread move strikes once
+            case MOVE_TARGET_FOES_AND_ALLY:
+                if (CountAliveMonsInBattle(BATTLE_ALIVE_EXCEPT_BATTLER, gBattlerAttacker) >= 2)
+                    return FALSE;
+                break;
+            default:
+            break;
+            }
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
 static bool8 IsFinalStrikeEffect(enum BattleMoveEffects moveEffect)
 {
     u32 i;
@@ -14913,6 +15042,17 @@ void BS_CheckParentalBondCounter(void)
     // Some effects should only happen on the first or second strike of Parental Bond,
     // so a way to check this in battle scripts is useful
     if (gSpecialStatuses[gBattlerAttacker].parentalBondState == cmd->counter && IsBattlerAlive(gBattlerTarget))
+        gBattlescriptCurrInstr = cmd->jumpInstr;
+    else
+        gBattlescriptCurrInstr = cmd->nextInstr;
+}
+
+void BS_CheckFermataCounter(void)
+{
+    NATIVE_ARGS(u8 counter, const u8 *jumpInstr);
+    // Some effects should only happen on the first or second strike of Fermata,
+    // so a way to check this in battle scripts is useful
+    if (gSpecialStatuses[gBattlerAttacker].fermataState == cmd->counter && IsBattlerAlive(gBattlerTarget))
         gBattlescriptCurrInstr = cmd->jumpInstr;
     else
         gBattlescriptCurrInstr = cmd->nextInstr;
@@ -15449,6 +15589,13 @@ void BS_SetGlaiveRush(void)
 {
     NATIVE_ARGS();
     gBattleMons[gBattlerAttacker].volatiles.glaiveRush = TRUE;
+    gBattlescriptCurrInstr = cmd->nextInstr;
+}
+
+void BS_SetShadowWeave(void)
+{
+    NATIVE_ARGS();
+    gBattleMons[gBattlerAttacker].volatiles.shadowweave = TRUE;
     gBattlescriptCurrInstr = cmd->nextInstr;
 }
 
@@ -16867,6 +17014,12 @@ void BS_TrySetFairyLock(void)
     if (gFieldStatuses & STATUS_FIELD_FAIRY_LOCK)
     {
         gBattlescriptCurrInstr = cmd->failInstr;
+    }
+    else if (GetBattlerAbility(gBattlerAttacker) == ABILITY_TRAP_MASTER)
+    {
+        gFieldStatuses |= STATUS_FIELD_FAIRY_LOCK;
+        gFieldTimers.fairyLockTimer = gBattleTurnCounter + 4;
+        gBattlescriptCurrInstr = cmd->nextInstr;
     }
     else
     {

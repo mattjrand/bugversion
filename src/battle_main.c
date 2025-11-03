@@ -4752,6 +4752,10 @@ u32 GetBattlerTotalSpeedStatArgs(u32 battler, u32 ability, enum ItemHoldEffect h
             speed *= 2;
         else if (ability == ABILITY_SLUSH_RUSH  && (gBattleWeather & (B_WEATHER_HAIL | B_WEATHER_SNOW)))
             speed *= 2;
+        else if (ability == ABILITY_WATERLOGGED && holdEffect != HOLD_EFFECT_UTILITY_UMBRELLA && gBattleWeather & B_WEATHER_SUN)
+            speed *= 2;
+        else if (ability == ABILITY_WATERLOGGED && holdEffect != HOLD_EFFECT_UTILITY_UMBRELLA && gBattleWeather & B_WEATHER_RAIN)
+            speed *= 0.5;
     }
 
     // other abilities
@@ -5144,6 +5148,7 @@ static void TurnValuesCleanUp(bool8 var0)
             gBattleStruct->battlerState[i].commandingDondozo = FALSE;
 
         gSpecialStatuses[i].parentalBondState = PARENTAL_BOND_OFF;
+        gSpecialStatuses[i].fermataState = FERMATA_OFF;
         gBattleStruct->battlerState[i].usedEjectItem = FALSE;
         gProtectStructs[i].lashOutAffected = FALSE;
         gDisableStructs[i].endured = FALSE;

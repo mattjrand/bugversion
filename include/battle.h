@@ -204,6 +204,7 @@ struct SpecialStatus
     u8 gemBoost:1;
     u8 rototillerAffected:1;  // to be affected by rototiller
     u8 parentalBondState:2;
+    u8 fermataState:2;
     u8 multiHitOn:1;
     u8 distortedTypeMatchups:1;
     u8 teraShellAbilityDone:1;

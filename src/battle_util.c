@@ -3617,6 +3617,15 @@ u32 AbilityBattleEffects(u32 caseID, u32 battler, u32 ability, u32 special, u32 
                 }
             }
             break;
+        case ABILITY_SHORT_FUSE:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_SHORTFUSE;
+                gSpecialStatuses[battler].switchInAbilityDone = TRUE;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
+            break;
         case ABILITY_MOLD_BREAKER:
             if (!gSpecialStatuses[battler].switchInAbilityDone)
             {
@@ -4150,6 +4159,14 @@ u32 AbilityBattleEffects(u32 caseID, u32 battler, u32 ability, u32 special, u32 
                 effect++;
             }
             break;
+        case ABILITY_SHADOW_WEAVE:
+            if(!gSpecialStatuses[battler].switchInAbilityDone && !(gBattleMons[battler].volatiles.shadowweave))
+            {
+                gBattleMons[battler].volatiles.shadowweave = TRUE;
+                BattleScriptPushCursorAndCallback(BattleScript_ShadowWeaveActivates);
+                effect++;
+            }
+            break;
         case ABILITY_EMBODY_ASPECT_TEAL_MASK:
         case ABILITY_EMBODY_ASPECT_HEARTHFLAME_MASK:
         case ABILITY_EMBODY_ASPECT_WELLSPRING_MASK:
@@ -4384,6 +4401,16 @@ u32 AbilityBattleEffects(u32 caseID, u32 battler, u32 ability, u32 special, u32 
                     effect++;
                 }
                 break;
+            case ABILITY_SHOWDOWN_MODE:
+                if(IsBattlerAlive(battler))
+                {
+                    BattleScriptPushCursorAndCallback(BattleScript_ShowdownModeActivates);
+                    gBattleStruct->moveDamage[battler] = GetNonDynamaxMaxHP(battler) / 6;
+                    if (gBattleStruct->moveDamage[battler] == 0)
+                        gBattleStruct->moveDamage[battler] = 1;
+                    effect++;
+                }
+                break;
             case ABILITY_HEALER:
                 gBattleScripting.battler = BATTLE_PARTNER(battler);
                 if (IsBattlerAlive(gBattleScripting.battler)
@@ -4514,6 +4541,18 @@ u32 AbilityBattleEffects(u32 caseID, u32 battler, u32 ability, u32 special, u32 
             {
                 gEffectBattler = battler;
                 SET_STATCHANGER(STAT_DEF, 1, FALSE);
+                BattleScriptCall(BattleScript_TargetAbilityStatRaiseRet);
+                effect++;
+            }
+            break;
+        case ABILITY_SHORT_FUSE:
+            if (gBattlerAttacker != gBattlerTarget
+             && IsBattlerTurnDamaged(gBattlerTarget)
+             && IsBattlerAlive(battler)
+             && CompareStat(battler, STAT_ATK, MAX_STAT_STAGE, CMP_LESS_THAN, gLastUsedAbility))
+            {
+                gEffectBattler = battler;
+                SET_STATCHANGER(STAT_ATK, 1, FALSE);
                 BattleScriptCall(BattleScript_TargetAbilityStatRaiseRet);
                 effect++;
             }
@@ -8344,6 +8383,10 @@ static inline u32 CalcMoveBasePowerAfterModifiers(struct DamageContext *ctx)
         if (IsBeamMove(move))
            modifier = uq4_12_multiply(modifier, UQ_4_12(1.5));
         break;
+    case ABILITY_BOMBS_AWAY:
+        if (IsBallisticMove(move))
+           modifier = uq4_12_multiply(modifier, UQ_4_12(1.5));
+        break;
     case ABILITY_WATER_BUBBLE:
         if (moveType == TYPE_WATER)
            modifier = uq4_12_multiply(modifier, UQ_4_12(2.0));
@@ -8611,6 +8654,10 @@ static inline u32 CalcAttackStat(struct DamageContext *ctx)
         if (IsBattleMoveSpecial(move) && IsBattlerWeatherAffected(battlerAtk, B_WEATHER_SUN))
             modifier = uq4_12_multiply_half_down(modifier, UQ_4_12(1.5));
         break;
+    case ABILITY_SHOWDOWN_MODE:
+        if (IsBattleMovePhysical(move))
+            modifier = uq4_12_multiply_half_down(modifier, UQ_4_12(1.5));
+        break;
     case ABILITY_DEFEATIST:
         if (gBattleMons[battlerAtk].hp <= (gBattleMons[battlerAtk].maxHP / 2))
             modifier = uq4_12_multiply_half_down(modifier, UQ_4_12(0.5));
@@ -8733,6 +8780,34 @@ static inline u32 CalcAttackStat(struct DamageContext *ctx)
                 RecordAbilityBattle(battlerDef, ABILITY_THICK_FAT);
         }
         break;
+
+    case ABILITY_BATTLE_ARMOR:
+        if (moveType == TYPE_ROCK || moveType == TYPE_STEEL)
+        {
+            modifier = uq4_12_multiply_half_down(modifier, UQ_4_12(0.5));
+            if (ctx->updateFlags)
+                RecordAbilityBattle(battlerDef, ABILITY_BATTLE_ARMOR);
+        }
+        break;
+    
+    case ABILITY_SHELL_ARMOR:
+        if (moveType == TYPE_ROCK || moveType == TYPE_STEEL)
+        {
+            modifier = uq4_12_multiply_half_down(modifier, UQ_4_12(0.5));
+            if (ctx->updateFlags)
+                RecordAbilityBattle(battlerDef, ABILITY_SHELL_ARMOR);
+        }
+        break;
+
+    case ABILITY_DELTA_SPEED:
+        if (moveType == TYPE_ROCK || moveType == TYPE_ICE || moveType == TYPE_ELECTRIC)
+        {
+            modifier = uq4_12_multiply_half_down(modifier, UQ_4_12(0.5));
+            if (ctx->updateFlags)
+                RecordAbilityBattle(battlerDef, ABILITY_DELTA_SPEED);
+        }
+        break;
+    
     case ABILITY_PURIFYING_SALT:
         if (moveType == TYPE_GHOST)
         {
@@ -8996,6 +9071,13 @@ static inline uq4_12_t GetParentalBondModifier(u32 battlerAtk)
     return B_PARENTAL_BOND_DMG >= GEN_7 ? UQ_4_12(0.25) : UQ_4_12(0.5);
 }
 
+static inline uq4_12_t GetFermataModifier(u32 battlerAtk)
+{
+    if (gSpecialStatuses[battlerAtk].fermataState != FERMATA_2ND_HIT)
+        return UQ_4_12(1.0);
+    return UQ_4_12(0.5);
+}
+
 static inline uq4_12_t GetSameTypeAttackBonusModifier(struct DamageContext *ctx)
 {
     if (ctx->moveType == TYPE_MYSTERY)
@@ -9162,6 +9244,13 @@ static inline uq4_12_t GetDefenderAbilitiesModifier(struct DamageContext *ctx)
     case ABILITY_MULTISCALE:
     case ABILITY_SHADOW_SHIELD:
         if (IsBattlerAtMaxHp(ctx->battlerDef))
+        {
+            modifier = UQ_4_12(0.5);
+            recordAbility = TRUE;
+        }
+        break;
+    case ABILITY_LIVING_SHIELD:
+        if (ctx->typeEffectivenessModifier >= UQ_4_12(2.0))
         {
             modifier = UQ_4_12(0.5);
             recordAbility = TRUE;
@@ -11822,6 +11911,8 @@ u32 GetTotalAccuracy(u32 battlerAtk, u32 battlerDef, u32 move, u32 atkAbility, u
     s8 buff, accStage, evasionStage;
     u32 atkParam = GetBattlerHoldEffectParam(battlerAtk);
     u32 defParam = GetBattlerHoldEffectParam(battlerDef);
+    u32 defAlly = BATTLE_PARTNER(battlerDef);
+    u32 dAllyAbility = GetBattlerAbility(defAlly);
 
     gPotentialItemEffectBattler = battlerDef;
     accStage = gBattleMons[battlerAtk].statStages[STAT_ACC];
@@ -11868,6 +11959,9 @@ u32 GetTotalAccuracy(u32 battlerAtk, u32 battlerDef, u32 move, u32 atkAbility, u
         if (IsBattleMovePhysical(move))
             calc = (calc * 80) / 100; // 1.2 hustle loss
         break;
+    case ABILITY_ILLUMINATE:
+            calc = (calc * 120) / 100; // 1.2 boost to all Pokemon from Illuminate
+        break;
     }
 
     // Target's ability
@@ -11885,6 +11979,18 @@ u32 GetTotalAccuracy(u32 battlerAtk, u32 battlerDef, u32 move, u32 atkAbility, u
         if (gBattleMons[battlerDef].volatiles.confusionTurns)
             calc = (calc * 50) / 100; // 1.5 tangled feet loss
         break;
+    case ABILITY_ILLUMINATE:
+        if(IsBattlerAlive(battlerDef))
+            calc = (calc * 120) / 100; // 1.2 boost to all Pokemon from Illuminate
+        break;
+    case ABILITY_SHADOW_WEAVE:
+        if (gBattleMons[battlerDef].volatiles.shadowweave)
+            calc = (calc * 0); //First move always misses a Pokemon with Shadow Weave
+            gBattleMons[battlerDef].volatiles.shadowweave = FALSE;
+        break;
+    case ABILITY_WATERLOGGED:
+        if (HasWeatherEffect() && gBattleWeather & B_WEATHER_RAIN)
+            calc = (calc * 60) / 100; // Equivalent to +2 Evasion when in Rain
     }
 
     // Attacker's ally's ability
@@ -11894,6 +12000,18 @@ u32 GetTotalAccuracy(u32 battlerAtk, u32 battlerDef, u32 move, u32 atkAbility, u
     case ABILITY_VICTORY_STAR:
         if (IsBattlerAlive(atkAlly))
             calc = (calc * 110) / 100; // 1.1 ally's victory star boost
+        break;
+    case ABILITY_ILLUMINATE:
+            calc = (calc * 120) / 100; // 1.2 boost to all Pokemon from Illuminate
+        break;
+    }
+
+    // Target's ally's ability
+    switch (dAllyAbility)
+    {
+        case ABILITY_ILLUMINATE:
+        if(IsBattlerAlive(defAlly))
+            calc = (calc * 120) / 100; // 1.2 boost to all Pokemon from Illuminate
         break;
     }
 
