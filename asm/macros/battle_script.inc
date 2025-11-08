@@ -2178,6 +2178,10 @@
 	callnative BS_TryActivateSoulheart
 	.endm
 
+	.macro tryactivateInspire
+	callnative BS_TryActivateInspire
+	.endm
+
 	.macro playmoveanimation move:req
 	callnative BS_PlayMoveAnimation
 	.2byte \move

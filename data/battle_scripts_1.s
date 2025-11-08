@@ -5007,6 +5007,28 @@ BattleScript_BulkUpTryDef::
 BattleScript_BulkUpEnd::
 	goto BattleScript_MoveEnd
 
+BattleScript_EffectProteinBulkUp::
+	attackcanceler
+	attackstring
+	ppreduce
+	jumpifstat BS_ATTACKER, CMP_LESS_THAN, STAT_ATK, MAX_STAT_STAGE, BattleScript_ProteinBulkUpDoMoveAnim
+	jumpifstat BS_ATTACKER, CMP_EQUAL, STAT_DEF, MAX_STAT_STAGE, BattleScript_CantRaiseMultipleStats
+BattleScript_ProteinBulkUpDoMoveAnim::
+	printstring STRINGID_PROTEINDRAINACTIVATE
+	setstatchanger STAT_ATK, 1, FALSE
+	statbuffchange BS_ATTACKER, STAT_CHANGE_ALLOW_PTR, BattleScript_ProteinBulkUpTryDef, BIT_DEF
+	jumpifbyte CMP_EQUAL, cMULTISTRING_CHOOSER, B_MSG_STAT_WONT_INCREASE, BattleScript_ProteinBulkUpTryDef
+	printfromtable gStatUpStringIds
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_ProteinBulkUpTryDef::
+	setstatchanger STAT_DEF, 1, FALSE
+	statbuffchange BS_ATTACKER, STAT_CHANGE_ALLOW_PTR, BattleScript_ProteinBulkUpEnd
+	jumpifbyte CMP_EQUAL, cMULTISTRING_CHOOSER, B_MSG_STAT_WONT_INCREASE, BattleScript_ProteinBulkUpEnd
+	printfromtable gStatUpStringIds
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_ProteinBulkUpEnd::
+	goto BattleScript_MoveEnd
+
 BattleScript_EffectCalmMind::
 	attackcanceler
 	attackstring
@@ -5086,6 +5108,7 @@ BattleScript_FaintAttacker::
 	tryrevertweatherform
 	flushtextbox
 	waitanimation
+	tryactivateInspire
 	tryactivatesoulheart
 	tryactivatereceiver BS_ATTACKER
 	trytrainerslidemsgfirstoff BS_ATTACKER
@@ -5104,6 +5127,7 @@ BattleScript_FaintTarget::
 	tryrevertweatherform
 	flushtextbox
 	waitanimation
+	tryactivateInspire
 	tryactivatesoulheart
 	tryactivatereceiver BS_TARGET
 	trytrainerslidemsgfirstoff BS_TARGET
@@ -7510,6 +7534,28 @@ BattleScript_SupersweetSyrupLoopIncrement:
 	pause B_WAIT_TIME_MED
 	end3
 
+BattleScript_IntoxicatingScentActivates::
+	savetarget
+	call BattleScript_AbilityPopUp
+	setbyte gBattlerTarget, 0
+BattleScript_IntoxicatingSideLoop:
+	jumpiftargetally BattleScript_IntoxicatingSideIncrement
+	jumpifabsent BS_TARGET, BattleScript_IntoxicatingSideIncrement
+	trysetinfatuation BattleScript_IntoxicatingSideIncrement
+	volatileanimation BS_EFFECT_BATTLER, VOLATILE_INFATUATION
+BattleScript_IntoxicatingPrintMessage:
+	printstring STRINGID_PKMNFELLINLOVE
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_IntoxicatingSideIncrement:
+	addbyte gBattlerTarget, 1
+	jumpifbytenotequal gBattlerTarget, gBattlersCount, BattleScript_IntoxicatingSideLoop
+	copybyte sBATTLER, gBattlerAttacker
+	destroyabilitypopup
+	restoretarget
+	restoreattacker
+	pause B_WAIT_TIME_MED
+	end3
+
 BattleScript_SupersweetSyrupWontDecrease:
 	printstring STRINGID_STATSWONTDECREASE
 	goto BattleScript_SupersweetSyrupEffect_WaitString
@@ -8058,6 +8104,25 @@ BattleScript_ScriptingAbilityStatRaise::
 	waitmessage B_WAIT_TIME_LONG
 BattleScript_ScriptingAbilityStatRaiseRet:
 	restoreattacker
+	return
+
+BattleScript_ScriptingInspireStatRaise::
+	copybyte gBattlerAbility, sBATTLER
+	saveattacker
+	copybyte gBattlerAttacker, sBATTLER
+	setallytonexttarget BattleScript_InspireTryAttack
+BattleScript_InspireTryAttack:
+	modifybattlerstatstage BS_ATTACKER, STAT_ATK, INCREASE, 1, BattleScript_InspireTrySpAtk, ANIM_ON
+BattleScript_InspireTrySpAtk:
+	modifybattlerstatstage BS_ATTACKER, STAT_SPATK, INCREASE, 1, BattleScript_ScriptingInspireStatRaiseRet, ANIM_ON
+BattleScript_ScriptingInspireStatRaiseRet:
+	restoreattacker
+	return
+
+BattleScript_InspireActivates::
+	pause B_WAIT_TIME_SHORT
+	printstring STRINGID_INSPIREACTIVATES
+	waitmessage B_WAIT_TIME_LONG
 	return
 
 BattleScript_WeakArmorActivates::

@@ -2,6 +2,7 @@
 #define GUARD_BATTLE_SCRIPTS_H
 
 extern const u8 BattleScript_SupersweetSyrupActivates[];
+extern const u8 BattleScript_IntoxicatingScentActivates[];
 extern const u8 BattleScript_OpportunistCopyStatChange[];
 extern const u8 BattleScript_MirrorHerbCopyStatChange[];
 extern const u8 BattleScript_MirrorHerbCopyStatChangeEnd2[];
@@ -482,6 +483,8 @@ extern const u8 BattleScript_SupremeOverlordActivates[];
 extern const u8 BattleScript_CostarActivates[];
 extern const u8 BattleScript_ZeroToHeroActivates[];
 extern const u8 BattleScript_CommanderActivates[];
+extern const u8 BattleScript_InspireActivates[];
+extern const u8 BattleScript_ScriptingInspireStatRaise[];
 extern const u8 BattleScript_HospitalityActivates[];
 extern const u8 BattleScript_ShadowWeaveActivates[];
 extern const u8 BattleScript_ToxicDebrisActivates[];
@@ -730,6 +733,7 @@ extern const u8 BattleScript_EffectTickle[];
 extern const u8 BattleScript_EffectCosmicPower[];
 extern const u8 BattleScript_EffectSkyUppercut[];
 extern const u8 BattleScript_EffectBulkUp[];
+extern const u8 BattleScript_EffectProteinBulkUp[];
 extern const u8 BattleScript_EffectPlaceholder[];
 extern const u8 BattleScript_EffectWaterSport[];
 extern const u8 BattleScript_EffectCalmMind[];

@@ -1236,6 +1236,7 @@ static void Cmd_attackcanceler(void)
             battler = gBattlerTarget;
             gBattleStruct->bouncedMoveIsUsed = TRUE;
         }
+
         else if (IsDoubleBattle()
               && GetBattlerMoveTargetType(battler, gCurrentMove) == MOVE_TARGET_OPPONENTS_FIELD
               && GetBattlerAbility(BATTLE_PARTNER(gBattlerTarget)) == ABILITY_MAGIC_BOUNCE)
@@ -3766,6 +3767,17 @@ void SetMoveEffect(u32 battler, u32 effectBattler, bool32 primary, bool32 certai
                 BattleScriptPush(gBattlescriptCurrInstr + 1);
                 gBattlescriptCurrInstr = BattleScript_MoveEffectEerieSpell;
             }
+        }
+        break;
+    case MOVE_EFFECT_MAGIC_COAT:
+        if(IsDoubleBattle())
+        {
+            gProtectStructs[gBattlerAttacker].bounceMove = TRUE;
+            gProtectStructs[BATTLE_PARTNER(gBattlerAttacker)].bounceMove = TRUE;
+        }
+        else
+        {
+            gProtectStructs[gBattlerAttacker].bounceMove = TRUE;
         }
         break;
     case MOVE_EFFECT_RAISE_TEAM_ATTACK:
@@ -9389,7 +9401,7 @@ static bool32 TryTidyUpClear(u32 battlerAtk, bool32 clear)
 
 u32 IsFlowerVeilProtected(u32 battler)
 {
-    if (IS_BATTLER_OF_TYPE(battler, TYPE_GRASS))
+    if (IS_BATTLER_OF_TYPE(battler, TYPE_GRASS) || IS_BATTLER_OF_TYPE(battler, TYPE_BUG))
         return IsAbilityOnSide(battler, ABILITY_FLOWER_VEIL);
     else
         return 0;
@@ -17549,6 +17561,29 @@ void BS_TryActivateSoulheart(void)
         }
     }
     gBattleStruct->soulheartBattlerId = 0;
+    gBattlescriptCurrInstr = cmd->nextInstr;
+}
+
+void BS_TryActivateInspire(void)
+{
+    NATIVE_ARGS();
+    while (gBattleStruct->inspireBattlerId < gBattlersCount)
+    {
+        gBattleScripting.battler = gBattleStruct->inspireBattlerId++;
+        u32 partner = BATTLE_PARTNER(gBattleScripting.battler);
+        u32 ability = GetBattlerAbility(partner);
+        if (ability == ABILITY_INSPIRE
+            && IsBattlerAlive(gBattleScripting.battler)
+            && !NoAliveMonsForEitherParty()
+            && CompareStat(gBattleScripting.battler, STAT_ATK, MAX_STAT_STAGE, CMP_LESS_THAN, ability)
+            && CompareStat(gBattleScripting.battler, STAT_SPATK, MAX_STAT_STAGE, CMP_LESS_THAN, ability))
+        {
+            BattleScriptCall(BattleScript_ScriptingInspireStatRaise);
+            BattleScriptCall(BattleScript_InspireActivates);
+            return;
+        }
+    }
+    gBattleStruct->inspireBattlerId = 0;
     gBattlescriptCurrInstr = cmd->nextInstr;
 }
 
