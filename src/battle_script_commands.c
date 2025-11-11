@@ -1236,6 +1236,7 @@ static void Cmd_attackcanceler(void)
             battler = gBattlerTarget;
             gBattleStruct->bouncedMoveIsUsed = TRUE;
         }
+
         else if (IsDoubleBattle()
               && GetBattlerMoveTargetType(battler, gCurrentMove) == MOVE_TARGET_OPPONENTS_FIELD
               && GetBattlerAbility(BATTLE_PARTNER(gBattlerTarget)) == ABILITY_MAGIC_BOUNCE)
@@ -3766,6 +3767,17 @@ void SetMoveEffect(u32 battler, u32 effectBattler, bool32 primary, bool32 certai
                 BattleScriptPush(gBattlescriptCurrInstr + 1);
                 gBattlescriptCurrInstr = BattleScript_MoveEffectEerieSpell;
             }
+        }
+        break;
+    case MOVE_EFFECT_MAGIC_COAT:
+        if(IsDoubleBattle())
+        {
+            gProtectStructs[gBattlerAttacker].bounceMove = TRUE;
+            gProtectStructs[BATTLE_PARTNER(gBattlerAttacker)].bounceMove = TRUE;
+        }
+        else
+        {
+            gProtectStructs[gBattlerAttacker].bounceMove = TRUE;
         }
         break;
     case MOVE_EFFECT_RAISE_TEAM_ATTACK:
@@ -9389,7 +9401,7 @@ static bool32 TryTidyUpClear(u32 battlerAtk, bool32 clear)
 
 u32 IsFlowerVeilProtected(u32 battler)
 {
-    if (IS_BATTLER_OF_TYPE(battler, TYPE_GRASS))
+    if (IS_BATTLER_OF_TYPE(battler, TYPE_GRASS) || IS_BATTLER_OF_TYPE(battler, TYPE_BUG))
         return IsAbilityOnSide(battler, ABILITY_FLOWER_VEIL);
     else
         return 0;
@@ -11255,6 +11267,11 @@ static void Cmd_setfocusenergy(void)
         gBattleMons[battler].volatiles.dragonCheer = TRUE;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_PUMPED;
     }
+    else if (effect == EFFECT_STAR_DUSTING)
+    {
+        gBattleMons[battler].volatiles.dragonCheer = TRUE;
+        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_PUMPED;
+    }
     else
     {
         if (GetGenConfig(GEN_CONFIG_FOCUS_ENERGY_CRIT_RATIO) >= GEN_3
@@ -12092,14 +12109,22 @@ static void Cmd_cursetarget(void)
 static void Cmd_trysetspikes(void)
 {
     CMD_ARGS(const u8 *failInstr);
-
+    u32 ability = GetBattlerAbility(gBattlerAttacker);
     u8 targetSide = BATTLE_OPPOSITE(GetBattlerSide(gBattlerAttacker));
 
     if (gSideTimers[targetSide].spikesAmount == 3)
     {
         gBattlescriptCurrInstr = cmd->failInstr;
     }
-    else
+    else if (ability == ABILITY_TRAP_MASTER && (gSideTimers[targetSide].spikesAmount == 0 || gSideTimers[targetSide].spikesAmount == 1))
+    {
+         PushHazardTypeToQueue(targetSide, HAZARDS_SPIKES);
+        gSideTimers[targetSide].spikesAmount++;
+        gSideTimers[targetSide].spikesAmount++;
+        gBattlescriptCurrInstr = cmd->nextInstr;
+    }
+
+   else
     {
         if (gSideTimers[targetSide].spikesAmount == 0) // Add only once to the queue
             PushHazardTypeToQueue(targetSide, HAZARDS_SPIKES);
@@ -13096,11 +13121,29 @@ static void Cmd_trywish(void)
 static void Cmd_settoxicspikes(void)
 {
     CMD_ARGS(const u8 *failInstr);
+    u32 ability = GetBattlerAbility(gBattlerAttacker);
 
     u8 targetSide = GetBattlerSide(gBattlerTarget);
     if (gSideTimers[targetSide].toxicSpikesAmount >= 2)
     {
         gBattlescriptCurrInstr = cmd->failInstr;
+    }
+    else if (ability == ABILITY_TRAP_MASTER)
+    {
+        if (gSideTimers[targetSide].toxicSpikesAmount == 0)
+        {
+            PushHazardTypeToQueue(targetSide, HAZARDS_TOXIC_SPIKES);
+        gSideTimers[targetSide].toxicSpikesAmount++;
+        gSideTimers[targetSide].toxicSpikesAmount++;
+        gBattlescriptCurrInstr = cmd->nextInstr;
+        }
+        if (gSideTimers[targetSide].toxicSpikesAmount == 1)
+        {
+            PushHazardTypeToQueue(targetSide, HAZARDS_TOXIC_SPIKES);
+        gSideTimers[targetSide].toxicSpikesAmount++;
+        gSideTimers[targetSide].toxicSpikesAmount++;
+        gBattlescriptCurrInstr = cmd->nextInstr;
+        }
     }
     else
     {
@@ -15697,13 +15740,13 @@ void BS_SetPledgeStatus(void)
         switch (cmd->sideStatus)
         {
         case SIDE_STATUS_RAINBOW:
-            gSideTimers[side].rainbowTimer = gBattleTurnCounter + 4;
+            gSideTimers[side].rainbowTimer = gBattleTurnCounter + 6;
             break;
         case SIDE_STATUS_SEA_OF_FIRE:
-            gSideTimers[side].seaOfFireTimer = gBattleTurnCounter + 4;
+            gSideTimers[side].seaOfFireTimer = gBattleTurnCounter + 6;
             break;
         case SIDE_STATUS_SWAMP:
-            gSideTimers[side].swampTimer = gBattleTurnCounter + 4;
+            gSideTimers[side].swampTimer = gBattleTurnCounter + 6;
         }
 
         gBattlescriptCurrInstr = cmd->nextInstr;
@@ -17549,6 +17592,29 @@ void BS_TryActivateSoulheart(void)
         }
     }
     gBattleStruct->soulheartBattlerId = 0;
+    gBattlescriptCurrInstr = cmd->nextInstr;
+}
+
+void BS_TryActivateInspire(void)
+{
+    NATIVE_ARGS();
+    while (gBattleStruct->inspireBattlerId < gBattlersCount)
+    {
+        gBattleScripting.battler = gBattleStruct->inspireBattlerId++;
+        u32 partner = BATTLE_PARTNER(gBattleScripting.battler);
+        u32 ability = GetBattlerAbility(partner);
+        if (ability == ABILITY_INSPIRE
+            && IsBattlerAlive(gBattleScripting.battler)
+            && !NoAliveMonsForEitherParty()
+            && CompareStat(gBattleScripting.battler, STAT_ATK, MAX_STAT_STAGE, CMP_LESS_THAN, ability)
+            && CompareStat(gBattleScripting.battler, STAT_SPATK, MAX_STAT_STAGE, CMP_LESS_THAN, ability))
+        {
+            BattleScriptCall(BattleScript_ScriptingInspireStatRaise);
+            BattleScriptCall(BattleScript_InspireActivates);
+            return;
+        }
+    }
+    gBattleStruct->inspireBattlerId = 0;
     gBattlescriptCurrInstr = cmd->nextInstr;
 }
 

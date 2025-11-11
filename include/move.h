@@ -99,6 +99,7 @@ struct MoveInfo
     bool32 slicingMove:1;
     bool32 healingMove:1;
     bool32 beamMove:1;
+    bool32 piercingMove:1;
     bool32 minimizeDoubleDamage:1;
     bool32 ignoresTargetAbility:1;
     bool32 ignoresTargetDefenseEvasionStages:1;
@@ -336,6 +337,11 @@ static inline bool32 IsHealingMove(u32 moveId)
 static inline bool32 IsBeamMove(u32 moveId)
 {
     return gMovesInfo[SanitizeMoveId(moveId)].beamMove;
+}
+
+static inline bool32 IsPiercingMove(u32 moveId)
+{
+    return gMovesInfo[SanitizeMoveId(moveId)].piercingMove;
 }
 
 static inline bool32 MoveIncreasesPowerToMinimizedTargets(u32 moveId)

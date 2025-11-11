@@ -4771,6 +4771,8 @@ u32 GetBattlerTotalSpeedStatArgs(u32 battler, u32 ability, enum ItemHoldEffect h
         speed = (GetHighestStatId(battler) == STAT_SPEED) ? (speed * 150) / 100 : speed;
     else if (ability == ABILITY_UNBURDEN && gDisableStructs[battler].unburdenActive)
         speed *= 2;
+    else if (ability == ABILITY_LIGHTNING_CHARGE && IsPiercingMove(gChosenMoveByBattler[battler]))
+        speed *= 2;
 
     // player's badge boost
     if (!(gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK | BATTLE_TYPE_FRONTIER))
@@ -4850,6 +4852,10 @@ s32 GetBattleMovePriority(u32 battler, u32 ability, u32 move)
     else if (IsBattleMoveStatus(move) && IsAbilityAndRecord(battler, ability, ABILITY_PRANKSTER))
     {
         gProtectStructs[battler].pranksterElevated = 1;
+        priority++;
+    }
+    else if (ability == ABILITY_BRACING_LEGS && gMovesInfo[move].target == MOVE_TARGET_USER && IsBattleMoveStatus(move))
+    {    
         priority++;
     }
     else if (GetMoveEffect(move) == EFFECT_GRASSY_GLIDE && IsBattlerTerrainAffected(battler, STATUS_FIELD_GRASSY_TERRAIN) && GetActiveGimmick(gBattlerAttacker) != GIMMICK_DYNAMAX && !IsGimmickSelected(battler, GIMMICK_DYNAMAX))

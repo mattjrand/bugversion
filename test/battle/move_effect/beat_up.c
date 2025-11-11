@@ -28,6 +28,35 @@ SINGLE_BATTLE_TEST("Beat Up hits the target for each non-fainted, non-statused m
     }
 }
 
+SINGLE_BATTLE_TEST("Beat Up hits the target an extra five times if party includes Falinks")
+{
+    GIVEN {
+        PLAYER(SPECIES_WOBBUFFET);
+        PLAYER(SPECIES_WYNAUT);
+        PLAYER(SPECIES_PICHU)
+        PLAYER(SPECIES_PIKACHU) { Status1(STATUS1_POISON); }
+        PLAYER(SPECIES_FALINKS)
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN { MOVE(player, MOVE_BEAT_UP); }
+    } SCENE {
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_BEAT_UP, player);
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_BEAT_UP, player);
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_BEAT_UP, player);
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_BEAT_UP, player);
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_BEAT_UP, player);
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_BEAT_UP, player);
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_BEAT_UP, player);
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_BEAT_UP, player);
+        MESSAGE("The Pokémon was hit 8 time(s)!");
+    } THEN {
+        EXPECT_EQ(gBattleStruct->beatUpSpecies[0], SPECIES_WOBBUFFET);
+        EXPECT_EQ(gBattleStruct->beatUpSpecies[1], SPECIES_WYNAUT);
+        EXPECT_EQ(gBattleStruct->beatUpSpecies[2], SPECIES_PICHU);
+        EXPECT_EQ(gBattleStruct->beatUpSpecies[3], SPECIES_FALINKS);
+    }
+}
+
 TO_DO_BATTLE_TEST("Beat Up doesn't consider Comatose as a status")
 TO_DO_BATTLE_TEST("Beat Up's strikes have each an independent chance of a critical hit");
 

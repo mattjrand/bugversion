@@ -18,6 +18,19 @@ SINGLE_BATTLE_TEST("Mind's Eye allows to hit Ghost-type Pokémon with Normal- an
     }
 }
 
+SINGLE_BATTLE_TEST("Mind's Eye allows to hit Dark-type Pokémon with Psychic-type moves")
+{
+    GIVEN {
+        PLAYER(SPECIES_WOBBUFFET) { Ability(ABILITY_MINDS_EYE); };
+        OPPONENT(SPECIES_UMBREON);
+    } WHEN {
+        TURN { MOVE(player, MOVE_PSYCHIC); }
+    } SCENE {
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_PSYCHIC, player);
+        HP_BAR(opponent);
+    }
+}
+
 // No current official way to test this, effect based on Smogon's NatDex format.
 SINGLE_BATTLE_TEST("Mind's Eye doesn't bypass a Ghost-type's Wonder Guard")
 {

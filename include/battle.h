@@ -599,6 +599,7 @@ struct PartyState
     u32 ateBerry:1;
     u32 battleBondBoost:1;
     u32 transformZeroToHero:1;
+    u32 proteinDrainBoost:1;
     u32 supersweetSyrup:1;
     u32 timesGotHit:5;
     u32 changedSpecies:11; // For forms when multiple mons can change into the same pokemon.
@@ -723,6 +724,7 @@ struct BattleStruct
     u16 hpBefore[MAX_BATTLERS_COUNT]; // Hp of battlers before using a move. For Berserk and Anger Shell.
     struct Illusion illusion[MAX_BATTLERS_COUNT];
     u8 soulheartBattlerId;
+    u8 inspireBattlerId;
     u8 friskedBattler; // Frisk needs to identify 2 battlers in double battles.
     u8 metronomeItemCounter[MAX_BATTLERS_COUNT]; // For Metronome, number of times the same moves has been SUCCESFULLY used.
     u8 quickClawBattlerId;

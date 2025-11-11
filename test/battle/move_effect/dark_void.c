@@ -21,6 +21,7 @@ SINGLE_BATTLE_TEST("Dark Void inflicts 1-3 turns of sleep")
         TURN { MOVE(player, MOVE_DARK_VOID); MOVE(opponent, MOVE_CELEBRATE); }
         for (count = 0; count < turns; ++count)
             TURN {}
+            TURN {}
     } SCENE {
         ANIMATION(ANIM_TYPE_MOVE, MOVE_DARK_VOID, player);
         ANIMATION(ANIM_TYPE_STATUS, B_ANIM_STATUS_SLP, opponent);
@@ -39,4 +40,19 @@ SINGLE_BATTLE_TEST("Dark Void inflicts 1-3 turns of sleep")
 
 TO_DO_BATTLE_TEST("Dark Void can only be used by Darkrai (Gen7+)");
 TO_DO_BATTLE_TEST("Dark Void can be used by Pokémon other than Darkrai (Gen4-6)");
+SINGLE_BATTLE_TEST("Dark Void can be used by other Pokemon")
+{
+    GIVEN {
+        PLAYER(SPECIES_SHEDINJA) ;
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN { MOVE(player, MOVE_DARK_VOID); MOVE(opponent, MOVE_CELEBRATE); }
+    } SCENE {
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_CELEBRATE, opponent),
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_DARK_VOID, player);
+        ANIMATION(ANIM_TYPE_STATUS, B_ANIM_STATUS_SLP, opponent);
+        MESSAGE("The opposing Wobbuffet fell asleep!");
+        STATUS_ICON(opponent, sleep: TRUE);
+    }
+}
 TO_DO_BATTLE_TEST("Dark Void can be used by a Pokémon transformed into Darkrai");
