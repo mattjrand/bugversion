@@ -189,6 +189,13 @@ const struct BattleMoveEffect gBattleMoveEffects[NUM_BATTLE_MOVE_EFFECTS] =
         .encourageEncore = TRUE,
     },
 
+    [EFFECT_RESTORE_HP_STATUS] =
+    {
+        .battleScript = BattleScript_EffectRestoreHpAndStatus,
+        .battleTvScore = 3,
+        .encourageEncore = TRUE,
+    },
+
     [EFFECT_LIGHT_SCREEN] =
     {
         .battleScript = BattleScript_EffectLightScreen,
@@ -257,6 +264,13 @@ const struct BattleMoveEffect gBattleMoveEffects[NUM_BATTLE_MOVE_EFFECTS] =
     [EFFECT_FOCUS_ENERGY] =
     {
         .battleScript = BattleScript_EffectFocusEnergy,
+        .battleTvScore = 1,
+        .encourageEncore = TRUE,
+    },
+
+    [EFFECT_STAR_DUSTING] =
+    {
+        .battleScript = BattleScript_EffectStarDusting,
         .battleTvScore = 1,
         .encourageEncore = TRUE,
     },
@@ -1090,6 +1104,13 @@ const struct BattleMoveEffect gBattleMoveEffects[NUM_BATTLE_MOVE_EFFECTS] =
     [EFFECT_COSMIC_POWER] =
     {
         .battleScript = BattleScript_EffectCosmicPower,
+        .battleTvScore = 1,
+        .encourageEncore = TRUE,
+    },
+
+    [EFFECT_DEFEND_ORDER] =
+    {
+        .battleScript = BattleScript_EffectDefendOrder,
         .battleTvScore = 1,
         .encourageEncore = TRUE,
     },

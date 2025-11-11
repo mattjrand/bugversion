@@ -11267,6 +11267,11 @@ static void Cmd_setfocusenergy(void)
         gBattleMons[battler].volatiles.dragonCheer = TRUE;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_PUMPED;
     }
+    else if (effect == EFFECT_STAR_DUSTING)
+    {
+        gBattleMons[battler].volatiles.dragonCheer = TRUE;
+        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_GETTING_PUMPED;
+    }
     else
     {
         if (GetGenConfig(GEN_CONFIG_FOCUS_ENERGY_CRIT_RATIO) >= GEN_3
@@ -12104,14 +12109,22 @@ static void Cmd_cursetarget(void)
 static void Cmd_trysetspikes(void)
 {
     CMD_ARGS(const u8 *failInstr);
-
+    u32 ability = GetBattlerAbility(gBattlerAttacker);
     u8 targetSide = BATTLE_OPPOSITE(GetBattlerSide(gBattlerAttacker));
 
     if (gSideTimers[targetSide].spikesAmount == 3)
     {
         gBattlescriptCurrInstr = cmd->failInstr;
     }
-    else
+    else if (ability == ABILITY_TRAP_MASTER && (gSideTimers[targetSide].spikesAmount == 0 || gSideTimers[targetSide].spikesAmount == 1))
+    {
+         PushHazardTypeToQueue(targetSide, HAZARDS_SPIKES);
+        gSideTimers[targetSide].spikesAmount++;
+        gSideTimers[targetSide].spikesAmount++;
+        gBattlescriptCurrInstr = cmd->nextInstr;
+    }
+
+   else
     {
         if (gSideTimers[targetSide].spikesAmount == 0) // Add only once to the queue
             PushHazardTypeToQueue(targetSide, HAZARDS_SPIKES);
@@ -13108,11 +13121,29 @@ static void Cmd_trywish(void)
 static void Cmd_settoxicspikes(void)
 {
     CMD_ARGS(const u8 *failInstr);
+    u32 ability = GetBattlerAbility(gBattlerAttacker);
 
     u8 targetSide = GetBattlerSide(gBattlerTarget);
     if (gSideTimers[targetSide].toxicSpikesAmount >= 2)
     {
         gBattlescriptCurrInstr = cmd->failInstr;
+    }
+    else if (ability == ABILITY_TRAP_MASTER)
+    {
+        if (gSideTimers[targetSide].toxicSpikesAmount == 0)
+        {
+            PushHazardTypeToQueue(targetSide, HAZARDS_TOXIC_SPIKES);
+        gSideTimers[targetSide].toxicSpikesAmount++;
+        gSideTimers[targetSide].toxicSpikesAmount++;
+        gBattlescriptCurrInstr = cmd->nextInstr;
+        }
+        if (gSideTimers[targetSide].toxicSpikesAmount == 1)
+        {
+            PushHazardTypeToQueue(targetSide, HAZARDS_TOXIC_SPIKES);
+        gSideTimers[targetSide].toxicSpikesAmount++;
+        gSideTimers[targetSide].toxicSpikesAmount++;
+        gBattlescriptCurrInstr = cmd->nextInstr;
+        }
     }
     else
     {
@@ -15709,13 +15740,13 @@ void BS_SetPledgeStatus(void)
         switch (cmd->sideStatus)
         {
         case SIDE_STATUS_RAINBOW:
-            gSideTimers[side].rainbowTimer = gBattleTurnCounter + 4;
+            gSideTimers[side].rainbowTimer = gBattleTurnCounter + 6;
             break;
         case SIDE_STATUS_SEA_OF_FIRE:
-            gSideTimers[side].seaOfFireTimer = gBattleTurnCounter + 4;
+            gSideTimers[side].seaOfFireTimer = gBattleTurnCounter + 6;
             break;
         case SIDE_STATUS_SWAMP:
-            gSideTimers[side].swampTimer = gBattleTurnCounter + 4;
+            gSideTimers[side].swampTimer = gBattleTurnCounter + 6;
         }
 
         gBattlescriptCurrInstr = cmd->nextInstr;

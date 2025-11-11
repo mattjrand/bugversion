@@ -2490,7 +2490,19 @@ static enum MoveCanceller CancellerMultihitMoves(void)
         for (i = 0; i < PARTY_SIZE; i++)
         {
             u32 species = GetMonData(&party[i], MON_DATA_SPECIES);
-            if (species != SPECIES_NONE
+            if (species == SPECIES_FALINKS
+             && GetMonData(&party[i], MON_DATA_HP)
+             && !GetMonData(&party[i], MON_DATA_IS_EGG)
+             && !GetMonData(&party[i], MON_DATA_STATUS))
+            {
+                gBattleStruct->beatUpSpecies[gBattleStruct->beatUpSlot++] = species;
+                gMultiHitCounter++;
+                gMultiHitCounter++;
+                gMultiHitCounter++;
+                gMultiHitCounter++;
+                gMultiHitCounter++;
+            }
+            else if (species != SPECIES_NONE
              && GetMonData(&party[i], MON_DATA_HP)
              && !GetMonData(&party[i], MON_DATA_IS_EGG)
              && !GetMonData(&party[i], MON_DATA_STATUS))
