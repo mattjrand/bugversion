@@ -90,15 +90,19 @@ Route102_Text_LetsGoBack:
 	.string "Let's go back to the GYM!$"
 
 Route102_Text_ImNotVeryTall:
-	.string "I'm…not very tall, so I sink right\n"
-	.string "into tall grass.\p"
-	.string "The grass goes up my nose and…\n"
-	.string "Fwafwafwafwafwa…\p"
-	.string "Fwatchoo!$"
+	.string "I love KRICKETOT!\n"
+	.string "They're so musical.\p"
+	.string "I bet they grow up to be\n"
+	.string "bigshot conductors!$"
 
 Route102_Text_CatchWholeBunchOfPokemon:
-	.string "I'm going to catch a whole bunch of\n"
-	.string "POKéMON!$"
+	.string "Did you know Wurmple can evolve\n"
+	.string "into two different POKéMON!\p"
+	.string "It's butterfly form is super\n"
+	.string "viscious! It drains HP from\l"
+	.string "its foes. But its moth form\l"
+	.string "isn't any nicer. It poisons\l"
+	.string "foes to get critical hits!$" 
 
 Route102_Text_RouteSignOldale:
 	.string "ROUTE 102\n"
