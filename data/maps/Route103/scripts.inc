@@ -339,8 +339,11 @@ Route103_Text_BrendanTimeToHeadBack:
 	.string "We should head back to the LAB.$"
 
 Route103_Text_ShouldHaveBroughtPotion:
-	.string "My POKéMON is staggeringly tired…\n"
-	.string "I should have brought a POTION…$"
+	.string "Did you buy Antidote? Lots of WEEDLE\n"
+	.string "around here. They're pretty scary\l"
+	.string "when they evolve. Even if you hit\l"
+	.string "them with a tiny attack they'll\l"
+	.string "fly into a rage!$"
 
 Route103_Text_ShortcutToOldale:
 	.string "If you cross the sea from here,\n"

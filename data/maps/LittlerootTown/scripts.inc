@@ -906,8 +906,11 @@ LittlerootTown_EventScript_GiveRunningShoes::
 
 LittlerootTown_Text_OurNewHomeLetsGoInside:
 	.string "MOM: {PLAYER}, we're here, honey!\p"
-	.string "It must be tiring riding with our things\n"
-	.string "in the moving truck.\p"
+	.string "I still can't believe that HEX MANIAC\n"
+	.string "at the gas station tried to curse\l"
+	.string "you when you tripped on her hat!\l"
+	.string "She said you'd be stuck with bugs,\l"
+	.string "I think? I'm sure it's nonsense.\p"
 	.string "Well, this is LITTLEROOT TOWN.\p"
 	.string "How do you like it?\n"
 	.string "This is our new home!\p"
@@ -922,7 +925,9 @@ LittlerootTown_Text_WaitPlayer:
 LittlerootTown_Text_WearTheseRunningShoes:
 	.string "MOM: {PLAYER}! {PLAYER}! Did you\n"
 	.string "introduce yourself to PROF. BIRCH?\p"
-	.string "Oh! What an adorable POKéMON!\n"
+	.string "Oh! What a... POKéMON!\n"
+	.string "I'm not a big bug fan but I'm sure\n"
+	.string "you two will get along great.\n"
 	.string "You got it from PROF. BIRCH. How nice!\p"
 	.string "You're your father's child, all right.\n"
 	.string "You look good together with POKéMON!\p"

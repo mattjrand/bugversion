@@ -340,8 +340,12 @@ OldaleTown_Movement_ReturnToOriginalPosition:
 	step_end
 
 OldaleTown_Text_SavingMyProgress:
-	.string "I want to take a rest, so I'm saving my\n"
-	.string "progress.$"
+	.string "You can find CATERPIE around\n"
+	.string "here. They may not look like\l"
+	.string "much, but once you have a\l"
+	.string "BUTTERFREE its a great team\l"
+	.string "mate. They love helping their\l"
+	.string "allies. So friendly!$"
 
 OldaleTown_Text_IWorkAtPokemonMart:
 	.string "Hi!\n"

@@ -12,9 +12,9 @@ gText_Birch_Pokemon::
 	.string "$"
 
 gText_Birch_MainSpeech::
-	.string "This world is widely inhabited by\n"
-	.string "creatures known as POKéMON.\p"
-	.string "We humans live alongside POKéMON,\n"
+	.string "Ew, I was hoping that wasn't\n"
+	.string "going to be a Bug type POKéMON.\p"
+	.string "Anyway, we live alongside POKéMON,\n"
 	.string "at times as friendly playmates, and\l"
 	.string "at times as cooperative workmates.\p"
 	.string "And sometimes, we band together\n"
