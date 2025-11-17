@@ -1113,7 +1113,7 @@ static void Cmd_attackcanceler(void)
         gBattlescriptCurrInstr = BattleScript_MoveEnd;
         return;
     }
-    if (AtkCanceller_MoveSuccessOrder() != MOVE_STEP_SUCCESS)
+    if (AtkCanceler_MoveSuccessOrder() != MOVE_STEP_SUCCESS)
         return;
 
     if (gSpecialStatuses[gBattlerAttacker].parentalBondState == PARENTAL_BOND_OFF
@@ -1200,7 +1200,7 @@ static void Cmd_attackcanceler(void)
             gBattlescriptCurrInstr = BattleScript_FailedFromAtkString;
 
         if (!gBattleMoveEffects[effect].twoTurnEffect || (gBattleMons[gBattlerAttacker].volatiles.multipleTurns))
-            CancelMultiTurnMoves(gBattlerAttacker, SKY_DROP_ATTACKCANCELLER_CHECK);
+            CancelMultiTurnMoves(gBattlerAttacker, SKY_DROP_ATTACKCANCELER_CHECK);
         return;
     }
 
@@ -1213,7 +1213,7 @@ static void Cmd_attackcanceler(void)
         // Edge case for bouncing a powder move against a grass type pokemon.
 
         ClearDamageCalcResults();
-        SetAtkCancellerForCalledMove();
+        SetAtkCancelerForCalledMove();
         gEffectBattler = gBattlerTarget;
         if (BlocksPrankster(gCurrentMove, gBattlerTarget, gBattlerAttacker, TRUE))
         {
@@ -1248,7 +1248,7 @@ static void Cmd_attackcanceler(void)
         if (gBattleStruct->bouncedMoveIsUsed)
         {
             ClearDamageCalcResults();
-            SetAtkCancellerForCalledMove(); // Edge case for bouncing a powder move against a grass type pokemon.
+            SetAtkCancelerForCalledMove(); // Edge case for bouncing a powder move against a grass type pokemon.
             BattleScriptCall(BattleScript_MagicBounce);
             gBattlerAbility = battler;
             return;
@@ -1301,7 +1301,7 @@ static void Cmd_attackcanceler(void)
     {
         if (!CanBattlerAvoidContactEffects(gBattlerAttacker, gBattlerTarget, GetBattlerAbility(gBattlerAttacker), GetBattlerHoldEffect(gBattlerAttacker, TRUE), gCurrentMove))
             gProtectStructs[gBattlerAttacker].touchedProtectLike = TRUE;
-        CancelMultiTurnMoves(gBattlerAttacker, SKY_DROP_ATTACKCANCELLER_CHECK);
+        CancelMultiTurnMoves(gBattlerAttacker, SKY_DROP_ATTACKCANCELER_CHECK);
         gBattleStruct->moveResultFlags[gBattlerTarget] |= MOVE_RESULT_MISSED;
         gLastLandedMoves[gBattlerTarget] = 0;
         gLastHitByType[gBattlerTarget] = 0;
@@ -1873,7 +1873,7 @@ static void Cmd_typecalc(void)
 {
     CMD_ARGS();
 
-    if (!IsSpreadMove(GetBattlerMoveTargetType(gBattlerAttacker, gCurrentMove))) // Handled in CANCELLER_MULTI_TARGET_MOVES for Spread Moves
+    if (!IsSpreadMove(GetBattlerMoveTargetType(gBattlerAttacker, gCurrentMove))) // Handled in CANCELER_MULTI_TARGET_MOVES for Spread Moves
     {
         struct DamageContext ctx = {0};
         ctx.battlerAtk = gBattlerAttacker;
@@ -6373,9 +6373,10 @@ static void Cmd_moveend(void)
 
             // Set ShellTrap to activate after the attacker's turn if target was hit by a physical move.
             if (GetMoveEffect(gChosenMoveByBattler[gBattlerTarget]) == EFFECT_SHELL_TRAP
+                && IsBattleMovePhysical(gCurrentMove)
+                && IsBattlerTurnDamaged(gBattlerTarget)
                 && gBattlerTarget != gBattlerAttacker
                 && !IsBattlerAlly(gBattlerTarget, gBattlerAttacker)
-                && gProtectStructs[gBattlerTarget].physicalDmg
                 && gProtectStructs[gBattlerTarget].physicalBattlerId == gBattlerAttacker
                 && !TestIfSheerForceAffected(gBattlerAttacker, gCurrentMove))
             {
@@ -6511,7 +6512,6 @@ static void Cmd_moveend(void)
                     gBattleStruct->moveTarget[gBattlerAttacker] = gBattlerTarget = nextTarget; // Fix for moxie spread moves
                     gBattleScripting.moveendState = 0;
                     MoveValuesCleanUp();
-                    gBattleScripting.moveEffect = gBattleScripting.savedMoveEffect;
 
                     if (moveEffect == EFFECT_EXPLOSION || moveEffect == EFFECT_MISTY_EXPLOSION // Edge case for Explosion not changing targets
                      || moveEffect == EFFECT_SYNCHRONOISE) // So we don't go back to the Synchronoise script
@@ -8597,9 +8597,9 @@ static void Cmd_hidepartystatussummary(void)
 static void ResetValuesForCalledMove(void)
 {
     if (gBattlerByTurnOrder[gCurrentTurnActionNumber] != gBattlerAttacker)
-        gBattleStruct->atkCancellerTracker = 0;
+        gBattleStruct->atkCancelerTracker = 0;
     else
-        SetAtkCancellerForCalledMove();
+        SetAtkCancelerForCalledMove();
     gBattleScripting.animTurn = 0;
     gBattleScripting.animTargetsHit = 0;
     SetTypeBeforeUsingMove(gCurrentMove, gBattlerAttacker);
@@ -11626,6 +11626,13 @@ static void Cmd_trysetencore(void)
     {
         gDisableStructs[gBattlerTarget].encoredMove = gBattleMons[gBattlerTarget].moves[i];
         gDisableStructs[gBattlerTarget].encoredMovePos = i;
+
+        // If the target's selected move is not the same as the move being Encored into,
+        // the target will select a random opposing target
+        // Redirection such as Follow Me is already covered in HandleAction_UseMove of battle_util.c
+        if (gDisableStructs[gBattlerTarget].encoredMove != GetChosenMoveFromPosition(gBattlerTarget))
+            gBattleStruct->moveTarget[gBattlerTarget] = SetRandomTarget(gBattlerTarget);
+
         // Encore always lasts 3 turns, but we need to account for a scenario where Encore changes the move during the same turn.
         if (HasBattlerActedThisTurn(gBattlerTarget))
             gDisableStructs[gBattlerTarget].encoreTimer = 4;
@@ -14430,13 +14437,16 @@ static void Cmd_displaydexinfo(void)
 {
     CMD_ARGS();
 
-    struct Pokemon *mon = GetBattlerMon(GetCatchingBattler());
+    u32 caughtBattler = GetCatchingBattler();
+    struct Pokemon *mon = GetBattlerMon(caughtBattler);
     u16 species = GetMonData(mon, MON_DATA_SPECIES, NULL);
 
     switch (gBattleCommunication[0])
     {
     case 0:
         BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+        ClearTemporarySpeciesSpriteData(caughtBattler, FALSE, FALSE);
+        BattleLoadMonSpriteGfx(mon, caughtBattler);
         gBattleCommunication[0]++;
         break;
     case 1:
