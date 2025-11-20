@@ -3660,6 +3660,14 @@ u32 AbilityBattleEffects(u32 caseID, u32 battler, u32 ability, u32 special, u32 
                 BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
                 effect++;
             }
+        case ABILITY_INSECTIVORE:
+            if (!gSpecialStatuses[battler].switchInAbilityDone)
+            {
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWITCHIN_INSECTIVORE;
+                gSpecialStatuses[battler].switchInAbilityDone = TRUE;
+                BattleScriptPushCursorAndCallback(BattleScript_SwitchInAbilityMsg);
+                effect++;
+            }
         case ABILITY_TERAVOLT:
             if (!gSpecialStatuses[battler].switchInAbilityDone)
             {
@@ -9224,7 +9232,7 @@ static inline uq4_12_t GetBurnOrFrostBiteModifier(struct DamageContext *ctx)
 static inline uq4_12_t GetInfatuationModifier(u32 battlerAtk)
 {
     if(gBattleMons[battlerAtk].volatiles.infatuation)
-        return UQ_4_12(0.75);
+        return UQ_4_12(0.67);
     return UQ_4_12(1.00);
 }
 
@@ -9753,6 +9761,15 @@ static inline void MulByTypeEffectiveness(struct DamageContext *ctx, uq4_12_t *m
         && mod == UQ_4_12(0.0))
     {
         mod = UQ_4_12(1.0);
+        if (ctx->updateFlags)
+            RecordAbilityBattle(ctx->battlerAtk, ctx->abilityAtk);
+    }
+
+    else if ((ctx->moveType == TYPE_GRASS) && defType == TYPE_BUG
+        && (ctx->abilityAtk == ABILITY_INSECTIVORE)
+        && mod != UQ_4_12(2.0))
+    {
+        mod = UQ_4_12(2.0);
         if (ctx->updateFlags)
             RecordAbilityBattle(ctx->battlerAtk, ctx->abilityAtk);
     }

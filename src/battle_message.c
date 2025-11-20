@@ -633,6 +633,7 @@ const u8 *const gBattleStringsTable[STRINGID_COUNT] =
     [STRINGID_SHOCKTHREADSENTERS]                   = COMPOUND_STRING("Galvantula is surrounding the field with electric webs!"),
     [STRINGID_SHORTFUSEENTERS]                      = COMPOUND_STRING("{B_SCR_NAME_WITH_PREFIX} has a short fuse!"),
     [STRINGID_SHADOWWEAVEENTERS]                    = COMPOUND_STRING("{B_SCR_NAME_WITH_PREFIX} weaved into the shadows!"),
+    [STRINGID_INSECTIVOREENTERS]                    = COMPOUND_STRING("{B_SCR_NAME_WITH_PREFIX} is on the hunt for BUGS!"),
     [STRINGID_HARVESTBERRY]                         = COMPOUND_STRING("{B_ATK_NAME_WITH_PREFIX} harvested its {B_LAST_ITEM}!"),
     [STRINGID_MAGICBOUNCEACTIVATES]                 = COMPOUND_STRING("{B_DEF_NAME_WITH_PREFIX} bounced the {B_ATK_NAME_WITH_PREFIX2} back!"),
     [STRINGID_PROTEANTYPECHANGE]                    = COMPOUND_STRING("{B_ATK_NAME_WITH_PREFIX}'s {B_ATK_ABILITY} transformed it into the {B_BUFF1} type!"),
@@ -1005,6 +1006,7 @@ const u16 gSwitchInAbilityStringIds[] =
     [B_MSG_SWITCHIN_SHOCKTHREADS] = STRINGID_SHOCKTHREADSENTERS,
     [B_MSG_SWITCHIN_SHORTFUSE] = STRINGID_SHORTFUSEENTERS,
     [B_MSG_SWITCHIN_SHADOWWEAVE] = STRINGID_SHADOWWEAVEENTERS,
+    [B_MSG_SWITCHIN_INSECTIVORE] = STRINGID_INSECTIVOREENTERS,
 };
 
 const u16 gMissStringIds[] =
