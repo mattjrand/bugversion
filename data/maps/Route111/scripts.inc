@@ -703,7 +703,7 @@ Route111_Text_ClawFossilDisappeared:
 	.string "the sand…$"
 
 Route111_Text_RootFossilDisappeared:
-	.string "The ROOT FOSSIL disappeared into\n"
+	.string "The DOME FOSSIL disappeared into\n"
 	.string "the sand…$"
 
 Route111_Text_MauvilleUncleToldMeToTakeRockSmash:

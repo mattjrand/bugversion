@@ -22,7 +22,7 @@ DesertUnderpass_EventScript_GiveClawFossil::
 	end
 
 DesertUnderpass_EventScript_GiveRootFossil::
-	giveitem ITEM_ROOT_FOSSIL
+	giveitem ITEM_DOME_FOSSIL
 	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
 	removeobject LOCALID_UNDERPASS_FOSSIL
 	release
@@ -30,7 +30,7 @@ DesertUnderpass_EventScript_GiveRootFossil::
 
 @ Unused
 DesertUnderpass_Text_FoundRootFossil::
-	.string "{PLAYER} found the ROOT FOSSIL.$"
+	.string "{PLAYER} found the DOME FOSSIL.$"
 
 @ Unused
 DesertUnderpass_Text_FoundClawFossil::

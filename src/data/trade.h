@@ -986,10 +986,10 @@ static const struct InGameTrade sIngameTrades[] =
 {
     [INGAME_TRADE_SEEDOT] =
     {
-        .nickname = _("DOTS"),
-        .species = SPECIES_SEEDOT,
-        .ivs = {5, 4, 5, 4, 4, 4},
-        .abilityNum = 1,
+        .nickname = _("SCRATCH"),
+        .species = SPECIES_NINCADA,
+        .ivs = {30, 30, 30, 30, 30, 30},
+        .abilityNum = 2,
         .otId = 38726,
         .conditions = {30, 5, 5, 5, 5},
         .personality = 0x84,
@@ -998,14 +998,14 @@ static const struct InGameTrade sIngameTrades[] =
         .otName = _("KOBE"),
         .otGender = MALE,
         .sheen = 10,
-        .requestedSpecies = SPECIES_RALTS
+        .requestedSpecies = SPECIES_PINECO
     },
     [INGAME_TRADE_PLUSLE] =
     {
-        .nickname = _("PLUSES"),
-        .species = SPECIES_PLUSLE,
-        .ivs = {4, 4, 4, 5, 5, 4},
-        .abilityNum = 0,
+        .nickname = _("SPARKLE"),
+        .species = SPECIES_ILLUMISE,
+        .ivs = {30, 30, 30, 30, 30, 30},
+        .abilityNum = 2,
         .otId = 73996,
         .conditions = {5, 5, 30, 5, 5},
         .personality = 0x6F,
@@ -1019,9 +1019,9 @@ static const struct InGameTrade sIngameTrades[] =
     [INGAME_TRADE_HORSEA] =
     {
         .nickname = _("SEASOR"),
-        .species = SPECIES_HORSEA,
-        .ivs = {5, 4, 4, 4, 5, 4},
-        .abilityNum = 0,
+        .species = SPECIES_CLAUNCHER,
+        .ivs = {30, 30, 30, 30, 30, 30},
+        .abilityNum = 2,
         .otId = 46285,
         .conditions = {5, 5, 5, 5, 30},
         .personality = 0x7F,
@@ -1030,14 +1030,14 @@ static const struct InGameTrade sIngameTrades[] =
         .otName = _("SKYLAR"),
         .otGender = MALE,
         .sheen = 10,
-        .requestedSpecies = SPECIES_BAGON
+        .requestedSpecies = SPECIES_CORPHISH
     },
     [INGAME_TRADE_MEOWTH] =
     {
-        .nickname = _("MEOWOW"),
-        .species = SPECIES_MEOWTH,
-        .ivs = {4, 5, 4, 5, 4, 4},
-        .abilityNum = 0,
+        .nickname = _("DUNDER"),
+        .species = SPECIES_DUNSPARCE,
+        .ivs = {31, 31, 31, 31, 31, 31},
+        .abilityNum = 2,
         .otId = 91481,
         .conditions = {5, 5, 5, 30, 5},
         .personality = 0x8B,
@@ -1046,7 +1046,7 @@ static const struct InGameTrade sIngameTrades[] =
         .otName = _("ISIS"),
         .otGender = FEMALE,
         .sheen = 10,
-        .requestedSpecies = SPECIES_SKITTY
+        .requestedSpecies = SPECIES_MOTHIM
     }
 };
 
@@ -1056,7 +1056,7 @@ static const u16 sIngameTradeMail[][MAIL_WORDS_COUNT + 1] =
         EC_WORD_BE,
         EC_WORD_NICE,
         EC_WORD_TO,
-        EC_POKEMON(PLUSLE),
+        EC_POKEMON(ILLUMISE),
         EC_WORD_EXCL,
         EC_POKEMON(VOLBEAT),
         EC_WORD_WILL,
@@ -1066,17 +1066,17 @@ static const u16 sIngameTradeMail[][MAIL_WORDS_COUNT + 1] =
         EC_WORD_I,
         EC_WORD_WILL,
         EC_WORD_MAKE,
-        EC_POKEMON(BAGON),
+        EC_POKEMON(CORPHISH),
         EC_WORD_TOUGH,
         EC_WORD_PLEASE,
         EC_WORD_TRAIN,
-        EC_POKEMON(HORSEA),
+        EC_POKEMON(CLAUNCHER),
         EC_WORD_WELL
     }, {
         EC_WORD_THANK_YOU,
         EC_WORD_FOR,
-        EC_POKEMON(SKITTY),
-        EC_POKEMON_NATIONAL(MEOWTH),
+        EC_POKEMON(MOTHIM),
+        EC_POKEMON_NATIONAL(DUNSPARCE),
         EC_WORD_CRIES,
         EC_WORD_IN,
         EC_WORD_A,
